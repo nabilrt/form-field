@@ -8,7 +8,8 @@ $recent = q('SELECT * FROM orders ORDER BY id DESC LIMIT 5')->fetchAll();
 $days = q(
     "SELECT DATE(created_at) day,SUM(total*rate_to_base) total FROM orders WHERE created_at>=CURDATE()-INTERVAL 6 DAY AND status<>'cancelled' GROUP BY DATE(created_at)"
 )->fetchAll(PDO::FETCH_KEY_PAIR);
-$max = max(1, ...array_values($days));
+// A week with no orders leaves $days empty; max() needs an array then.
+$max = max([1, ...array_values($days)]);
 ?>
 <div class="admin-page-heading">
     <div>

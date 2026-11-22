@@ -1029,6 +1029,10 @@ try:
                             'href="' + assetBase + '/assets/').replace('src="/assets/',
                                                                        'src="' + assetBase + '/assets/')
         (work / (name + '.html')).write_text(html)
+    # A quiet week (no orders in the last 7 days) must not break the merchant dashboard.
+    execute("UPDATE orders SET created_at='2001-01-01 10:00:00'")
+    html, _, status = request('/admin', session=admin)
+    check(status == 200 and 'couldn’t load' not in html, 'Dashboard renders with no orders this week')
     print(f'\n{checks} checks passed. Temporary harness and HTML renders: {work}')
 except Exception:
     print(f'\nTest failure. Temporary harness retained at {work}')
