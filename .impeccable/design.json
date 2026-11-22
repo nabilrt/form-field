@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-12T07:51:23.414954+00:00",
+  "title": "Design System: Form & Field",
+  "extensions": {
+    "motion": [
+      {
+        "name": "control-state",
+        "value": "0.2s",
+        "purpose": "Button, input, and small control state transitions."
+      },
+      {
+        "name": "product-image",
+        "value": "0.65s cubic-bezier(.2,.8,.2,1)",
+        "purpose": "Restrained catalog image zoom."
+      },
+      {
+        "name": "slide-fade",
+        "value": "0.7s ease",
+        "purpose": "Homepage slide opacity/visibility change."
+      }
+    ],
+    "shadows": [
+      {
+        "name": "storefront-navigation",
+        "value": "0 10px 20px #0000000b",
+        "purpose": "Mobile storefront navigation overlay."
+      },
+      {
+        "name": "merchant-navigation",
+        "value": "8px 0 30px #0000000d",
+        "purpose": "Merchant navigation drawer."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "storefront-mobile",
+        "value": "680px"
+      },
+      {
+        "name": "storefront-intermediate",
+        "value": "900px"
+      },
+      {
+        "name": "storefront-desktop-tight",
+        "value": "1200px"
+      },
+      {
+        "name": "merchant-mobile-stack",
+        "value": "540px"
+      },
+      {
+        "name": "merchant-drawer",
+        "value": "760px"
+      },
+      {
+        "name": "merchant-intermediate",
+        "value": "1000px"
+      },
+      {
+        "name": "merchant-desktop-tight",
+        "value": "1250px"
+      }
+    ]
+  },
+  "components": [],
+  "narrative": {
+    "overview": "White main backgrounds and monochrome UI frame editorial product photography. Inter and Manrope are explicit user commitments.",
+    "keyCharacteristics": [
+      "White page foundation",
+      "Black primary actions",
+      "Local photography and fonts",
+      "Compact merchant task surfaces"
+    ],
+    "dos": [
+      "Do preserve the requested white/black theme and Inter/Manrope pairing."
+    ],
+    "donts": [
+      "Do not treat source inspection as a visual or live MySQL approval."
+    ]
+  }
+}

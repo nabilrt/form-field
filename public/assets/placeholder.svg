@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 700">
+    <rect width="600" height="700" fill="#f0ede7" />
+    <g fill="none" stroke="#9c958a" stroke-width="3">
+        <rect x="230" y="270" width="140" height="140" rx="4" />
+        <circle cx="271" cy="310" r="12" />
+        <path d="m230 390 48-49 28 28 28-28 36 39" />
+    </g>
+    <text
+        x="300"
+        y="460"
+        text-anchor="middle"
+        font-family="sans-serif"
+        font-size="18"
+        fill="#746e65"
+    >
+        Image coming soon
+    </text>
+</svg>

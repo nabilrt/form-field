@@ -1,0 +1,77 @@
+{
+    "tool": "OpenAI built-in image_gen",
+    "assets": [
+        {
+            "file": "product-1.jpg",
+            "prompt": "Use case: product-mockup. Asset type: ecommerce catalog photograph for a premium natural homewares brand. Subject: A sculptural lounge chair, natural oak frame with ivory woven linen cushions and curved wooden armrests, three-quarter front view. Quiet warm neutral off-white studio backdrop, subtle grounded shadows, soft directional window light, expertly photographed realistic natural material, magazine-quality still life. Portrait composition centered with generous space, entire product visible, consistent collection art direction. No text, no logo, no UI, no watermark."
+        },
+        {
+            "file": "product-2.jpg",
+            "prompt": "Use case: product-mockup. Asset type: ecommerce catalog photograph for a premium natural homewares brand. Subject: One beautiful ivory speckled stoneware coffee mug with a rounded generous handle, side view. Quiet warm neutral off-white studio backdrop, subtle grounded shadows, soft directional window light, expertly photographed realistic natural material, magazine-quality still life. Portrait composition centered with generous space, entire product visible, consistent collection art direction. No text, no logo, no UI, no watermark."
+        },
+        {
+            "file": "product-3.jpg",
+            "prompt": "Use case: product-mockup. Asset type: ecommerce catalog photograph for a premium natural homewares brand. Subject: A plump rectangular oatmeal washed linen cushion on a minimal neutral surface, close view showing woven texture. Quiet warm neutral off-white studio backdrop, subtle grounded shadows, soft directional window light, expertly photographed realistic natural material, magazine-quality still life. Portrait composition centered with generous space, entire product visible, consistent collection art direction. No text, no logo, no UI, no watermark."
+        },
+        {
+            "file": "product-4.jpg",
+            "prompt": "Use case: product-mockup. Asset type: ecommerce catalog photograph for a premium natural homewares brand. Subject: A sculptural table lamp with sandy beige ceramic tapered round base and ivory pleated linen lampshade, switched off. Quiet warm neutral off-white studio backdrop, subtle grounded shadows, soft directional window light, expertly photographed realistic natural material, magazine-quality still life. Portrait composition centered with generous space, entire product visible, consistent collection art direction. No text, no logo, no UI, no watermark."
+        },
+        {
+            "file": "product-5.jpg",
+            "prompt": "Use case: product-mockup. Asset type: ecommerce catalog photograph for a premium natural homewares brand. Subject: A matte chalk white organically rounded bud vase with a thin dried branch, on a neutral shelf. Quiet warm neutral off-white studio backdrop, subtle grounded shadows, soft directional window light, expertly photographed realistic natural material, magazine-quality still life. Portrait composition centered with generous space, entire product visible, consistent collection art direction. No text, no logo, no UI, no watermark."
+        },
+        {
+            "file": "product-6.jpg",
+            "prompt": "Use case: product-mockup. Asset type: ecommerce catalog photograph for a premium natural homewares brand. Subject: A low round solid natural oak side table with softly rounded edges, three-quarter front view. Quiet warm neutral off-white studio backdrop, subtle grounded shadows, soft directional window light, expertly photographed realistic natural material, magazine-quality still life. Portrait composition centered with generous space, entire product visible, consistent collection art direction. No text, no logo, no UI, no watermark."
+        },
+        {
+            "file": "product-7.jpg",
+            "prompt": "Use case: product-mockup. Asset type: ecommerce catalog photograph for a premium natural homewares brand. Subject: An oatmeal cotton woven throw casually folded and draped over a wooden bench, tactile natural fabric. Quiet warm neutral off-white studio backdrop, subtle grounded shadows, soft directional window light, expertly photographed realistic natural material, magazine-quality still life. Portrait composition centered with generous space, entire product visible, consistent collection art direction. No text, no logo, no UI, no watermark."
+        },
+        {
+            "file": "product-8.jpg",
+            "prompt": "Use case: product-mockup. Asset type: ecommerce catalog photograph for a premium natural homewares brand. Subject: A wide cream glazed irregular stoneware serving bowl, three-quarter overhead view. Quiet warm neutral off-white studio backdrop, subtle grounded shadows, soft directional window light, expertly photographed realistic natural material, magazine-quality still life. Portrait composition centered with generous space, entire product visible, consistent collection art direction. No text, no logo, no UI, no watermark."
+        },
+        {
+            "file": "product-9.jpg",
+            "prompt": "Use case: product-mockup. Asset type: premium ecommerce catalog photo. Subject: A pair of premium matte cream wireless over-ear headphones with softly rounded earcups, folded flat on a warm off-white studio surface. Soft directional natural window light, tactile realistic materials, subtle grounded shadows, sophisticated architectural still life, portrait framing, whole object visible with generous breathing room, consistent warm neutral art direction. No text, logos, watermarks, or UI."
+        },
+        {
+            "file": "product-10.jpg",
+            "prompt": "Use case: product-mockup. Asset type: premium ecommerce catalog photo. Subject: A compact portable bluetooth speaker with oatmeal woven fabric grille and a natural tan carry strap, on a warm off-white studio surface. Soft directional natural window light, tactile realistic materials, subtle grounded shadows, sophisticated architectural still life, portrait framing, whole object visible with generous breathing room, consistent warm neutral art direction. No text, logos, watermarks, or UI."
+        },
+        {
+            "file": "product-11.jpg",
+            "prompt": "Use case: product-mockup. Asset type: premium ecommerce catalog photo. Subject: A compact wireless mechanical keyboard in cream and warm gray with one muted orange escape key, seen from three-quarter above, on a warm off-white studio surface. Soft directional natural window light, tactile realistic materials, subtle grounded shadows, sophisticated architectural still life, portrait framing, whole object visible with generous breathing room, consistent warm neutral art direction. No text, logos, watermarks, or UI."
+        },
+        {
+            "file": "product-12.jpg",
+            "prompt": "Use case: product-mockup. Asset type: premium ecommerce catalog photo. Subject: A minimalist olive green canvas everyday backpack with tan leather trim, three-quarter view, on a warm off-white studio surface. Soft directional natural window light, tactile realistic materials, subtle grounded shadows, sophisticated architectural still life, portrait framing, whole object visible with generous breathing room, consistent warm neutral art direction. No text, logos, watermarks, or UI."
+        },
+        {
+            "file": "product-13.jpg",
+            "prompt": "Use case: product-mockup. Asset type: premium ecommerce catalog photo. Subject: A single matte sandy cream stainless steel insulated water bottle with a simple cylindrical shape and screw-on loop cap, on a warm off-white studio surface. Soft directional natural window light, tactile realistic materials, subtle grounded shadows, sophisticated architectural still life, portrait framing, whole object visible with generous breathing room, consistent warm neutral art direction. No text, logos, watermarks, or UI."
+        },
+        {
+            "file": "product-14.jpg",
+            "prompt": "Use case: product-mockup. Asset type: premium ecommerce catalog photo. Subject: A simple amber glass pump bottle of hand wash with an unbranded blank cream label, on a warm off-white studio surface, a tiny olive branch nearby. Soft directional natural window light, tactile realistic materials, subtle grounded shadows, sophisticated architectural still life, portrait framing, whole object visible with generous breathing room, consistent warm neutral art direction. No text, logos, watermarks, or UI."
+        },
+        {
+            "file": "product-15.jpg",
+            "prompt": "Use case: product-mockup. Asset type: premium ecommerce catalog photo. Subject: A natural beige canvas tote bag with wide handles and a subtle bottom gusset, clean unbranded minimal, on a warm off-white studio surface. Soft directional natural window light, tactile realistic materials, subtle grounded shadows, sophisticated architectural still life, portrait framing, whole object visible with generous breathing room, consistent warm neutral art direction. No text, logos, watermarks, or UI."
+        },
+        {
+            "file": "hero.jpg",
+            "prompt": "Use case: photorealistic-natural. Asset type: wide homepage photographic banner for Form & Field, a curated home and living shop. A sunlit contemporary living room with warm ivory plaster walls, a low natural oak coffee table with a large rustic cream ceramic bowl and a branch in a matte ceramic vase, linen sofa with textured neutral cushions, burnt terracotta accent armchair, woven jute rug, daylight from tall windows to the right. Thoughtful architectural magazine photography, tactile imperfect natural materials, sophisticated quiet warm palette, real believable room, beautiful directional shadows. Wide horizontal composition, generous space around objects, no people, no text, no logos, no watermark. This is a real photographic scene asset, no website or UI in the image."
+        },
+        {
+            "file": "hero-2.jpg",
+            "prompt": "Use case: photorealistic-natural. Asset type: wide ecommerce lifestyle banner photo. A beautifully arranged minimal bright white home office: white plaster wall, natural oak desk, cream compact keyboard, cream wireless over-ear headphones, a small oatmeal fabric speaker, a ceramic coffee mug and a green branch in a vase. Natural sun from right, pale neutral colors, real tactile materials, contemporary design magazine quality, wide landscape composition, whole desk visible. No text, no people, no branding, no UI."
+        },
+        {
+            "file": "gallery-1.jpg",
+            "prompt": "Use case: product-mockup. Asset type: alternate gallery ecommerce photo of a sculptural oak lounge chair with ivory woven linen cushions and curved oak armrests. Show a detailed close-up three-quarter view of the oak armrest, linen seat, natural wood grain and construction, warm off-white studio background, natural window light, sophisticated realistic premium catalog photograph, portrait composition. No people, no text, no logos, no watermarks."
+        }
+    ]
+}

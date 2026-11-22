@@ -1,0 +1,27 @@
+{
+    "preset": "psr12",
+    "rules": {
+        "concat_space": {
+            "spacing": "one"
+        },
+        "array_indentation": true,
+        "trailing_comma_in_multiline": {
+            "elements": ["arrays"]
+        },
+        "no_extra_blank_lines": {
+            "tokens": [
+                "extra",
+                "curly_brace_block",
+                "parenthesis_brace_block",
+                "square_brace_block"
+            ]
+        },
+        "whitespace_after_comma_in_array": true,
+        "multiline_whitespace_before_semicolons": {
+            "strategy": "no_multi_line"
+        },
+        "cast_spaces": {
+            "space": "single"
+        }
+    }
+}
