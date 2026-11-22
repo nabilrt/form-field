@@ -1,6 +1,45 @@
 # Form & Field
 
-A framework-free PHP + MySQL ecommerce application. White backgrounds, black controls, Inter for interface text and Manrope for headings. Includes a responsive storefront and Shopify-inspired merchant workspace.
+**An open-source ecommerce platform in plain PHP + MySQL.** No framework, no build step, no Composer: copy it to any PHP host and sell. A responsive storefront, a full merchant workspace, and Medusa-style commerce features (multi-currency pricing, promotions with usage limits, reviews), built to be easy to read and easy to contribute to.
+
+[![Tests](https://github.com/nabilrt/form-field/actions/workflows/tests.yml/badge.svg)](https://github.com/nabilrt/form-field/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](LICENSE)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-black.svg)](CONTRIBUTING.md)
+
+![Storefront home page](docs/screenshots/home.jpg)
+
+## Highlights
+
+- **Storefront:** catalog with filters and live search, product pages with variant chips, build-a-set bundles, compare, saved items, recently viewed, reviews.
+- **Checkout:** cash on delivery and bank transfer, promo codes, saved addresses, guest or account checkout, printable invoices.
+- **Multi-currency:** shoppers pick their currency; merchants set per-variant prices per currency or fall back to exchange rates.
+- **Merchant workspace:** products and variants, orders, customers, collections, discounts with usage limits, currencies, review moderation, analytics, CSV export.
+- **Secure by default:** prepared statements, CSRF on every form, strict CSP, per-account login throttling, re-encoded uploads.
+- **Progressive enhancement:** every page works without JavaScript; with it, the bag, search and add-to-bag update in place.
+
+## Screenshots
+
+| Shop | Product |
+| --- | --- |
+| ![Shop with filters](docs/screenshots/shop.jpg) | ![Product page with variant chips](docs/screenshots/product.jpg) |
+| **Live search** | **Add to bag without leaving the page** |
+| ![Live search suggestions](docs/screenshots/live-search.jpg) | ![Added to bag notice](docs/screenshots/add-to-bag.jpg) |
+| **Bag** | **Checkout** |
+| ![Bag with delivery progress](docs/screenshots/cart.jpg) | ![Checkout with promo code](docs/screenshots/checkout.jpg) |
+| **Build a set** | **Mobile** |
+| ![Build a set](docs/screenshots/build-a-set.jpg) | <img src="docs/screenshots/mobile-product.jpg" alt="Mobile product page with sticky buy bar" width="260"> <img src="docs/screenshots/mobile-home.jpg" alt="Mobile home page" width="260"> |
+
+**Merchant workspace**
+
+| Products | Product editor |
+| --- | --- |
+| ![Admin product list](docs/screenshots/admin-products.jpg) | ![Admin product editor](docs/screenshots/admin-product-edit.jpg) |
+| **Discounts with usage limits** | **Currencies** |
+| ![Admin discounts](docs/screenshots/admin-discounts.jpg) | ![Admin currencies](docs/screenshots/admin-currencies.jpg) |
+| **Analytics** | |
+| ![Admin analytics](docs/screenshots/admin-analytics.jpg) | |
+
+Interface: white backgrounds, black controls, Inter for interface text and Manrope for headings.
 
 ## Run locally
 
@@ -148,3 +187,11 @@ The integration suite covers authentication, CSRF, rating/text validation, draft
 The interface adds navigation underlines, preloaded gallery crossfades, comparison-tray entry feedback, and brief subtotal feedback. A mobile set-builder bar keeps totals and the Add action reachable. Reduced-motion preferences disable movement. Core comparison, history, and set submission remain usable without JavaScript; live budget updates require JavaScript.
 
 These additions require no schema migration or new runtime dependency. The isolated suite covers selection limits, malformed IDs, safe return routes, CSRF, all-or-nothing set submission, variant ownership, stock bounds, browsing order/privacy, and the delivery planner. All 177 application checks pass. Live browser interaction/layout and native MySQL execution remain unverified under the environment restrictions described above.
+
+## Contributing
+
+Contributions are welcome, from typo fixes to new commerce features. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the test suite and code conventions, and [SECURITY.md](SECURITY.md) to report vulnerabilities privately. Good first areas: translations, payment gateways (bKash, Nagad, SSLCommerz, Stripe), regions and tax rules, email notifications, and returns.
+
+## License
+
+[MIT](LICENSE). Use it, modify it, and run your own store with it. Demo product photos are AI-generated sample images and the Inter and Manrope fonts are under the SIL Open Font License; see [ASSETS.md](ASSETS.md).
