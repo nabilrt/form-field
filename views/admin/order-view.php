@@ -55,6 +55,73 @@
             <?php endif; ?>
         </section>
 
+        <?php if (returns_available() && ($orderReturns = order_returns((int) $order['id']))):
+            $currency = currency($order['currency']);
+            $scale = 10 ** (int) $currency['decimals'];
+        ?>
+        <section class="admin-card padded" id="returns">
+            <div class="section-heading">
+                <h2>Returns</h2>
+                <?php if ($refunded = order_refunded((int) $order['id'])): ?>
+                <span class="muted">Refunded so far: <?= money($refunded, $order['currency']) ?></span>
+                <?php endif; ?>
+            </div>
+            <?php foreach ($orderReturns as $r): ?>
+            <div class="admin-return">
+                <div class="admin-return-head">
+                    <strong>Return #<?= (int) $r['id'] ?></strong>
+                    <span class="badge <?= e($r['status']) ?>"><?= e(ucfirst($r['status'])) ?></span>
+                </div>
+                <p class="muted">
+                    <?= e(RETURN_REASONS[$r['reason']] ?? $r['reason']) ?> · requested <?= date('d M Y, h:i a', strtotime($r['created_at'])) ?>
+                </p>
+                <?php if ($r['note']): ?><p>“<?= nl2br(e($r['note'])) ?>”</p><?php endif; ?>
+                <ul>
+                    <?php foreach ($r['items'] as $item): ?>
+                    <li><?= (int) $item['quantity'] ?> × <?= e($item['name']) ?> <small class="muted"><?= e($item['variant']) ?> · <?= money($item['price'], $order['currency']) ?></small></li>
+                    <?php endforeach; ?>
+                </ul>
+                <?php if ($r['status'] === 'requested'): ?>
+                <div class="row-actions return-actions">
+                    <form method="post">
+                        <?= csrf() ?>
+                        <input type="hidden" name="action" value="return_receive" />
+                        <input type="hidden" name="return_id" value="<?= (int) $r['id'] ?>" />
+                        <button class="button dark small">Mark received &amp; restock</button>
+                    </form>
+                    <form method="post" data-confirm="Reject this return? The customer will see it wasn’t accepted.">
+                        <?= csrf() ?>
+                        <input type="hidden" name="action" value="return_reject" />
+                        <input type="hidden" name="return_id" value="<?= (int) $r['id'] ?>" />
+                        <button class="text-button">Reject</button>
+                    </form>
+                </div>
+                <?php elseif ($r['status'] === 'received'): ?>
+                <form method="post" class="return-refund">
+                    <?= csrf() ?>
+                    <input type="hidden" name="action" value="return_refund" />
+                    <input type="hidden" name="return_id" value="<?= (int) $r['id'] ?>" />
+                    <label for="refund-<?= (int) $r['id'] ?>">Refund (<?= e($currency['symbol']) ?>)</label>
+                    <input
+                        id="refund-<?= (int) $r['id'] ?>"
+                        name="refund_amount"
+                        type="number"
+                        min="0"
+                        step="<?= $currency['decimals'] ? 1 / $scale : 1 ?>"
+                        value="<?= e(number_format(suggested_refund($order, $r['items']) / $scale, (int) $currency['decimals'], '.', '')) ?>"
+                        required
+                    />
+                    <button class="button dark small">Record refund</button>
+                    <small class="field-help">Suggested: item prices minus their share of the order discount. Pay it the way the customer paid.</small>
+                </form>
+                <?php elseif ($r['status'] === 'refunded'): ?>
+                <p><strong>Refunded <?= money((int) $r['refund_amount'], $order['currency']) ?></strong></p>
+                <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
+        </section>
+        <?php endif; ?>
+
         <?php if ($order['notes']): ?>
         <section class="admin-card padded">
             <h2>Customer note</h2>

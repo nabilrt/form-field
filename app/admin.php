@@ -20,7 +20,7 @@ if (!$section) {
     $section = 'dashboard';
 }
 
-$allowed = ['dashboard', 'products', 'orders', 'customers', 'collections', 'sliders', 'discounts', 'reviews', 'analytics', 'currencies', 'settings'];
+$allowed = ['dashboard', 'products', 'orders', 'customers', 'collections', 'sliders', 'discounts', 'reviews', 'analytics', 'currencies', 'returns', 'settings'];
 if (!in_array($section, $allowed, true)) {
     http_response_code(404);
     $section = '404';

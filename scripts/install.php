@@ -44,6 +44,7 @@ try {
         'shipping' => '120',
         'free_shipping' => '5000',
         'tax_rate' => '0',
+        'return_window_days' => '30',
         'bank_details' => '',
         'announcement' => 'A little more room for living. Free delivery on orders over ৳5,000.',
     ];

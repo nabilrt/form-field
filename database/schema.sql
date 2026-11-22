@@ -202,3 +202,25 @@ CREATE TABLE IF NOT EXISTS variant_prices (
     FOREIGN KEY(variant_id) REFERENCES variants(id) ON DELETE CASCADE,
     FOREIGN KEY(currency) REFERENCES currencies(code) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS returns (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'requested',
+    reason VARCHAR(40) NOT NULL,
+    note TEXT NULL,
+    refund_amount INT UNSIGNED NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL,
+    FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    INDEX idx_returns_status (status, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS return_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    return_id INT NOT NULL,
+    order_item_id INT NOT NULL,
+    quantity INT UNSIGNED NOT NULL,
+    FOREIGN KEY(return_id) REFERENCES returns(id) ON DELETE CASCADE,
+    FOREIGN KEY(order_item_id) REFERENCES order_items(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

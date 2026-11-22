@@ -495,7 +495,7 @@ try:
     settingsCases = [
         ('general', {'store_name': 'Form & Field', 'store_email': 'owner@test.local',
                      'store_phone': '01711111111', 'store_address': '42 Merchant Road'}),
-        ('delivery', {'shipping': '150', 'free_shipping': '6000', 'tax_rate': '5'}),
+        ('delivery', {'shipping': '150', 'free_shipping': '6000', 'tax_rate': '5', 'return_window_days': '14'}),
         ('payments', {'bank_details': 'Account 1234, Example Bank'}),
         ('storefront', {'announcement': 'New arrivals are here.'}),
     ]
@@ -520,7 +520,7 @@ try:
     before = dict(conn.execute('SELECT `key`,value FROM settings').fetchall())
     html, failedSave, _ = request('/admin/settings', {
         'action': 'save_settings', 'settings_group': 'delivery',
-        'shipping': '999', 'free_shipping': '1', 'tax_rate': '101'}, admin)
+        'shipping': '999', 'free_shipping': '1', 'tax_rate': '101', 'return_window_days': '30'}, admin)
     check(dict(conn.execute('SELECT `key`,value FROM settings').fetchall()) == before
           and failedSave.get('flash', {}).get('type') == 'error'
           and html.endswith('#delivery'),
@@ -1029,6 +1029,71 @@ try:
                             'href="' + assetBase + '/assets/').replace('src="/assets/',
                                                                        'src="' + assetBase + '/assets/')
         (work / (name + '.html')).write_text(html)
+    # Returns: request on delivered orders, receive (restock), refund or reject.
+    stock3 = scalar('SELECT stock FROM variants WHERE id=3')
+    price3 = scalar('SELECT price FROM variants WHERE id=3')
+    _, rs, _ = request('/cart', {'action': 'cart_add', 'variant_id': 3, 'quantity': 2})
+    _, rs, _ = request('/checkout', session=rs)
+    request('/checkout', {**orderPost, 'email': 'returns@test.local', 'currency': 'BDT',
+            'checkout_nonce': rs['checkout_nonce']}, rs)
+    rOrder = scalar("SELECT id FROM orders WHERE email='returns@test.local'")
+    rToken = scalar('SELECT token FROM orders WHERE id=?', (rOrder,))
+    rItem = scalar('SELECT id FROM order_items WHERE order_id=?', (rOrder,))
+    ask = lambda qty, token=None, reason='damaged': request('/order', {
+        'action': 'return_request', 'token': token or rToken, 'reason': reason,
+        'return_qty': {str(rItem): str(qty)}})
+    _, st, _ = ask(1)
+    check(scalar('SELECT COUNT(*) FROM returns') == 0 and 'delivered' in st.get('flash', {}).get('text', ''),
+          'Returns wait until the order is delivered')
+    request('/admin/orders/view', {'action': 'save_order', 'id': str(rOrder), 'status': 'delivered',
+            'payment_status': 'paid'}, admin)
+    html, _, _ = request('/order', query={'token': rToken})
+    check('Request a return' in html and 'of 2' in html, 'Delivered order offers a return form with returnable quantity')
+    _, st, _ = ask(3)
+    check(scalar('SELECT COUNT(*) FROM returns') == 0 and st['flash']['type'] == 'error', 'Cannot return more than was bought')
+    _, st, _ = ask(1, token='not-a-token')
+    check(scalar('SELECT COUNT(*) FROM returns') == 0, 'Return requests need the order token')
+    _, st, _ = ask(1, reason='free-money')
+    check(scalar('SELECT COUNT(*) FROM returns') == 0, 'Return reason must be one of the listed reasons')
+    html, st, _ = ask(1)
+    first = scalar("SELECT id FROM returns WHERE status='requested'")
+    check(first and scalar('SELECT quantity FROM return_items WHERE return_id=?', (first,)) == 1
+          and '#returns' in html, 'Shopper requests a return for one unit')
+    ask(1)
+    second = scalar('SELECT MAX(id) FROM returns')
+    html, _, _ = request('/order', query={'token': rToken})
+    _, st, _ = ask(1)
+    check(scalar('SELECT COUNT(*) FROM returns') == 2 and 'already has a return' in html,
+          'Units already in a return cannot be returned again')
+    html, _, _ = request('/admin/returns', session=admin)
+    check('#' + str(first) in html and 'returns@test.local' not in html and 'nav-count' in html,
+          'Returns list shows requests with a pending badge')
+    request('/admin/orders/view', {'action': 'return_refund', 'return_id': str(first), 'refund_amount': '1'}, admin)
+    check(scalar('SELECT status FROM returns WHERE id=?', (first,)) == 'requested', 'Refund requires the items to be received first')
+    request('/admin/orders/view', {'action': 'return_receive', 'return_id': str(first)}, admin)
+    request('/admin/orders/view', {'action': 'return_receive', 'return_id': str(first)}, admin)
+    check(scalar('SELECT status FROM returns WHERE id=?', (first,)) == 'received'
+          and scalar('SELECT stock FROM variants WHERE id=3') == stock3 - 2 + 1,
+          'Receiving restocks the returned unit exactly once')
+    html, _, _ = request('/admin/orders/view', session=admin, query={'id': str(rOrder)})
+    check('value="' + str(price3) + '"' in html, 'Suggested refund equals the item price when no discount applied')
+    request('/admin/orders/view', {'action': 'return_refund', 'return_id': str(first), 'refund_amount': str(price3 * 5)}, admin)
+    check(scalar('SELECT status FROM returns WHERE id=?', (first,)) == 'received', 'Refund cannot exceed what is left on the order')
+    request('/admin/orders/view', {'action': 'return_refund', 'return_id': str(first), 'refund_amount': str(price3)}, admin)
+    check(scalar('SELECT refund_amount FROM returns WHERE id=?', (first,)) == price3
+          and scalar('SELECT payment_status FROM orders WHERE id=?', (rOrder,)) == 'paid',
+          'Partial refund is recorded and the order stays paid')
+    request('/admin/orders/view', {'action': 'return_reject', 'return_id': str(second)}, admin)
+    html, _, _ = request('/order', query={'token': rToken})
+    check(scalar('SELECT status FROM returns WHERE id=?', (second,)) == 'rejected' and 'of 1' in html
+          and 'Refunded' in html and 'Not accepted' in html,
+          'Rejected return frees its unit; shopper sees each return status')
+    execute("UPDATE orders SET created_at='2001-01-01 10:00:00' WHERE id=?", (rOrder,))
+    html, _, _ = request('/order', query={'token': rToken})
+    check('return window' in html and 'Request a return' not in html, 'Closed return window hides the form')
+    execute('DELETE FROM orders WHERE id=?', (rOrder,))
+    execute('UPDATE variants SET stock=? WHERE id=3', (stock3,))
+
     # A quiet week (no orders in the last 7 days) must not break the merchant dashboard.
     execute("UPDATE orders SET created_at='2001-01-01 10:00:00'")
     html, _, status = request('/admin', session=admin)

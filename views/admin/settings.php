@@ -146,6 +146,20 @@ $settingsTabs['security'] = ['label' => 'Security'];
                             Calculated on the discounted product subtotal. Set your applicable rate.
                         </small>
                     </div>
+                    <div class="field">
+                        <label for="return_window_days">Return window (days)</label>
+                        <input
+                            id="return_window_days"
+                            name="return_window_days"
+                            type="number"
+                            min="0"
+                            max="365"
+                            step="1"
+                            value="<?= e(setting('return_window_days', '30')) ?>"
+                            required
+                        />
+                        <small>How long after ordering shoppers can request a return online. Use 0 to turn online returns off.</small>
+                    </div>
                 </section>
             </div>
             <div class="settings-save">

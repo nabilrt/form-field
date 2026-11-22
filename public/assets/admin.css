@@ -2182,3 +2182,34 @@
     align-items: center;
     justify-content: flex-end;
 }
+
+/* Returns on the merchant order view */
+.admin-return {
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+}
+.admin-return-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+.admin-return ul {
+    margin: 8px 0 12px;
+    padding-left: 18px;
+}
+.return-actions {
+    justify-content: flex-start;
+}
+.return-refund {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    align-items: center;
+}
+.return-refund input {
+    width: 140px;
+}
+.return-refund small {
+    flex-basis: 100%;
+}

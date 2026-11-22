@@ -4602,3 +4602,32 @@ body.compare-active {
     pointer-events: none;
     transition: opacity 0.15s;
 }
+
+/* Returns on the order page */
+.returns-card {
+    margin-top: 24px;
+}
+.return-summary,
+.return-line {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+}
+.return-summary small,
+.return-line small {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+}
+.return-line {
+    grid-template-columns: 1fr 80px auto;
+}
+.return-form > p {
+    margin: 16px 0 4px;
+}
+.return-form .field {
+    margin-top: 16px;
+}

@@ -12,8 +12,9 @@
 
 - **Storefront:** catalog with filters and live search, product pages with variant chips, build-a-set bundles, compare, saved items, recently viewed, reviews.
 - **Checkout:** cash on delivery and bank transfer, promo codes, saved addresses, guest or account checkout, printable invoices.
+- **Returns:** shoppers request returns on delivered orders; merchants receive (auto-restock), refund with a discount-aware suggestion, or reject.
 - **Multi-currency:** shoppers pick their currency; merchants set per-variant prices per currency or fall back to exchange rates.
-- **Merchant workspace:** products and variants, orders, customers, collections, discounts with usage limits, currencies, review moderation, analytics, CSV export.
+- **Merchant workspace:** products and variants, orders, returns, customers, collections, discounts with usage limits, currencies, review moderation, analytics, CSV export.
 - **Secure by default:** prepared statements, CSRF on every form, strict CSP, per-account login throttling, re-encoded uploads.
 - **Progressive enhancement:** every page works without JavaScript; with it, the bag, search and add-to-bag update in place.
 
@@ -165,6 +166,8 @@ To enable promo code usage limits on an existing installation, run `php scripts/
 
 To enable multiple currencies on an existing installation, run `php scripts/migrate-currencies.php` once (idempotent; existing orders are recorded as BDT). Then add currencies under Admin → Currencies; shoppers pick theirs from the header.
 
+To enable returns on an existing installation, run `php scripts/migrate-returns.php` once (idempotent). Shoppers can then request returns from their order page for 30 days after ordering; change the window under Settings → Delivery & tax (0 turns online returns off). Refunds are recorded in the admin; pay them out the way the customer paid.
+
 New installations receive the table through `php scripts/install.php`. The review migration is idempotent and only creates `product_reviews`; it does not replace or reseed products, customers, or orders. Until it runs, the storefront continues working and Admin → Reviews displays setup instructions. The provided environment blocked the MySQL connection, so the migration could not be applied there.
 
 Signed-in customers can submit a 1–5 rating, a title (3–140 characters), and a written review (10–4,000 characters). Each customer has one review per product, enforced in the database. They can edit or withdraw it from the product page. Reviews start as **pending**, and edits return published reviews to moderation. Submitted text is escaped and rendered as plain text. Drafts are scoped to the customer session and cleared at sign-out.
@@ -190,7 +193,7 @@ These additions require no schema migration or new runtime dependency. The isola
 
 ## Contributing
 
-Contributions are welcome, from typo fixes to new commerce features. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the test suite and code conventions, and [SECURITY.md](SECURITY.md) to report vulnerabilities privately. Good first areas: translations, payment gateways (bKash, Nagad, SSLCommerz, Stripe), regions and tax rules, email notifications, and returns.
+Contributions are welcome, from typo fixes to new commerce features. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the test suite and code conventions, and [SECURITY.md](SECURITY.md) to report vulnerabilities privately. Good first areas: translations, payment gateways (bKash, Nagad, SSLCommerz, Stripe), regions and tax rules, email notifications, and exchanges on top of returns.
 
 ## License
 

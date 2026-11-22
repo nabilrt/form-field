@@ -454,7 +454,7 @@ function settings_groups(): array
         ],
         'delivery' => [
             'label' => 'Delivery & tax',
-            'keys' => ['shipping', 'free_shipping', 'tax_rate'],
+            'keys' => ['shipping', 'free_shipping', 'tax_rate', 'return_window_days'],
         ],
         'payments' => [
             'label' => 'Payments',
@@ -468,6 +468,8 @@ function settings_groups(): array
 }
 
 require_once __DIR__ . '/currency.php';
+
+require_once __DIR__ . '/returns.php';
 
 require_once __DIR__ . '/catalog-filters.php';
 

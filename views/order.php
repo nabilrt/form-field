@@ -72,5 +72,79 @@
             <?= icon('download', 18) ?> View & print invoice
         </a>
     </div>
+
+    <?php if (returns_available()):
+        $orderReturns = order_returns((int) $order['id']);
+        $returnable = array_filter(returnable_items((int) $order['id']), static fn ($i) => (int) $i['returnable'] > 0);
+        $blocked = return_block_reason($order);
+    ?>
+    <div class="confirmation-card returns-card" id="returns">
+        <div class="section-heading">
+            <h2>Returns</h2>
+            <?php if (!$blocked): ?><span class="muted">Within <?= (int) setting('return_window_days', '30') ?> days of ordering</span><?php endif; ?>
+        </div>
+
+        <?php foreach ($orderReturns as $r): ?>
+        <div class="return-summary">
+            <div>
+                <strong>Return #<?= (int) $r['id'] ?></strong>
+                <small><?= e(RETURN_REASONS[$r['reason']] ?? $r['reason']) ?> · requested <?= date('d M Y', strtotime($r['created_at'])) ?></small>
+                <small><?= e(implode(', ', array_map(static fn ($i) => $i['quantity'] . ' × ' . $i['name'], $r['items']))) ?></small>
+            </div>
+            <span class="badge <?= e($r['status']) ?>"><?= e(match ($r['status']) {
+                'requested' => 'Under review',
+                'received' => 'Received',
+                'refunded' => 'Refunded ' . money((int) $r['refund_amount'], $order['currency']),
+                default => 'Not accepted',
+            }) ?></span>
+        </div>
+        <?php endforeach; ?>
+
+        <?php if ($blocked): ?>
+        <p class="muted"><?= e($blocked) ?></p>
+        <?php elseif (!$returnable): ?>
+        <p class="muted">Every item in this order already has a return.</p>
+        <?php else: ?>
+        <form method="post" class="return-form">
+            <?= csrf() ?>
+            <input type="hidden" name="action" value="return_request" />
+            <input type="hidden" name="token" value="<?= e($order['token']) ?>" />
+            <p>Choose what you’d like to send back.</p>
+            <?php foreach ($returnable as $item): ?>
+            <div class="return-line">
+                <label for="return-<?= (int) $item['id'] ?>">
+                    <strong><?= e($item['name']) ?></strong>
+                    <small><?= e($item['variant']) ?> · <?= money($item['price'], $order['currency']) ?> each</small>
+                </label>
+                <input
+                    id="return-<?= (int) $item['id'] ?>"
+                    type="number"
+                    name="return_qty[<?= (int) $item['id'] ?>]"
+                    min="0"
+                    max="<?= (int) $item['returnable'] ?>"
+                    value="0"
+                    aria-describedby="return-max-<?= (int) $item['id'] ?>"
+                />
+                <small id="return-max-<?= (int) $item['id'] ?>">of <?= (int) $item['returnable'] ?></small>
+            </div>
+            <?php endforeach; ?>
+            <div class="field">
+                <label for="return-reason">Reason</label>
+                <select id="return-reason" name="reason" required>
+                    <option value="">Choose a reason</option>
+                    <?php foreach (RETURN_REASONS as $value => $label): ?>
+                    <option value="<?= e($value) ?>"><?= e($label) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="field">
+                <label for="return-note">Anything we should know? <span class="muted">(optional)</span></label>
+                <textarea id="return-note" name="note" rows="3" maxlength="1000"></textarea>
+            </div>
+            <button class="button secondary full-width">Request a return <?= icon('return', 17) ?></button>
+        </form>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
     <a class="text-link" href="/shop">Find something else to love <?= icon('arrow', 18) ?></a>
 </section>

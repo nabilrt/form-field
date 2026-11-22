@@ -263,6 +263,59 @@ if ($action === 'place_order') {
     }
 }
 
+// Guests and customers request returns with the order's private token, like the order page.
+if ($action === 'return_request') {
+    $token = is_string($_POST['token'] ?? null) ? $_POST['token'] : '';
+    $back = '/order?token=' . rawurlencode($token) . '#returns';
+    try {
+        if (!returns_available()) {
+            throw new RuntimeException('Returns are not available yet. Please contact us.');
+        }
+        db()->beginTransaction();
+        // Lock the order so two requests can't return the same units twice.
+        $order = q('SELECT * FROM orders WHERE token=? FOR UPDATE', [$token])->fetch();
+        if (!$order) {
+            throw new RuntimeException('This order could not be found.');
+        }
+        if ($blocked = return_block_reason($order)) {
+            throw new RuntimeException($blocked);
+        }
+        $reason = is_string($_POST['reason'] ?? null) ? $_POST['reason'] : '';
+        $note = is_string($_POST['note'] ?? null) ? trim($_POST['note']) : '';
+        if (!isset(RETURN_REASONS[$reason]) || mb_strlen($note) > 1000) {
+            throw new RuntimeException('Choose a reason for the return (notes up to 1,000 characters).');
+        }
+        $wanted = is_array($_POST['return_qty'] ?? null) ? $_POST['return_qty'] : [];
+        $lines = [];
+        foreach (returnable_items((int) $order['id']) as $item) {
+            $qty = filter_var($wanted[$item['id']] ?? 0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+            if ($qty === false || $qty > (int) $item['returnable']) {
+                throw new RuntimeException('Choose quantities up to what you can still return.');
+            }
+            if ($qty > 0) {
+                $lines[] = [$item['id'], $qty];
+            }
+        }
+        if (!$lines) {
+            throw new RuntimeException('Choose at least one item to return.');
+        }
+        q('INSERT INTO returns(order_id,reason,note) VALUES(?,?,?)', [$order['id'], $reason, $note ?: null]);
+        $returnId = (int) db()->lastInsertId();
+        foreach ($lines as [$itemId, $qty]) {
+            q('INSERT INTO return_items(return_id,order_item_id,quantity) VALUES(?,?,?)', [$returnId, $itemId, $qty]);
+        }
+        db()->commit();
+        flash('Return requested. We’ll review it and let you know how to send the items back.');
+    } catch (Throwable $ex) {
+        if (db()->inTransaction()) {
+            db()->rollBack();
+        }
+        error_log($ex->getMessage());
+        flash($ex instanceof RuntimeException && !($ex instanceof PDOException) ? $ex->getMessage() : 'Your return could not be requested. Please try again.', 'error');
+    }
+    redirect($back);
+}
+
 if (str_starts_with($action, 'customer_')) {
     require __DIR__ . '/customer-actions.php';
 }
@@ -437,6 +490,9 @@ try {
                     || ($key === 'tax_rate' && (float) $value > 100))) {
                 throw new RuntimeException('Shipping and tax must be valid nonnegative numbers.');
             }
+            if ($key === 'return_window_days' && (!ctype_digit($value) || (int) $value > 365)) {
+                throw new RuntimeException('Set the return window to a whole number of days from 0 to 365.');
+            }
             if ($key === 'store_email' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
                 throw new RuntimeException('Enter a valid store email.');
             }
@@ -549,6 +605,50 @@ try {
         }
         flash('Currency saved.');
         redirect('/admin/currencies');
+    }
+
+    if (in_array($action, ['return_receive', 'return_refund', 'return_reject'], true)) {
+        db()->beginTransaction();
+        $return = q('SELECT * FROM returns WHERE id=? FOR UPDATE', [(int) ($_POST['return_id'] ?? 0)])->fetch();
+        if (!$return) {
+            throw new RuntimeException('Return not found.');
+        }
+        $order = q('SELECT * FROM orders WHERE id=? FOR UPDATE', [$return['order_id']])->fetch();
+        $_POST['id'] = $order['id']; // error redirect returns to this order
+        $needed = ['return_receive' => 'requested', 'return_reject' => 'requested', 'return_refund' => 'received'][$action];
+        if ($return['status'] !== $needed) {
+            throw new RuntimeException('This return has already moved on. Reload to see its current status.');
+        }
+        if ($action === 'return_receive') {
+            // Received items go back on the shelf.
+            foreach (order_returns((int) $order['id']) as $r) {
+                if ((int) $r['id'] === (int) $return['id']) {
+                    foreach ($r['items'] as $item) {
+                        if ($item['variant_id']) {
+                            q('UPDATE variants SET stock=stock+? WHERE id=?', [$item['quantity'], $item['variant_id']]);
+                        }
+                    }
+                }
+            }
+            q("UPDATE returns SET status='received',updated_at=NOW() WHERE id=?", [$return['id']]);
+            flash('Return received. Items are back in stock.');
+        } elseif ($action === 'return_reject') {
+            q("UPDATE returns SET status='rejected',updated_at=NOW() WHERE id=?", [$return['id']]);
+            flash('Return rejected.');
+        } else {
+            $amount = to_minor(is_string($_POST['refund_amount'] ?? null) ? $_POST['refund_amount'] : '', $order['currency']);
+            $remaining = (int) $order['total'] - order_refunded((int) $order['id']);
+            if ($amount === null || $amount > $remaining) {
+                throw new RuntimeException('Enter a refund up to ' . money($remaining, $order['currency']) . ', the amount not yet refunded.');
+            }
+            q("UPDATE returns SET status='refunded',refund_amount=?,updated_at=NOW() WHERE id=?", [$amount, $return['id']]);
+            if ($amount === $remaining) {
+                q("UPDATE orders SET payment_status='refunded' WHERE id=?", [$order['id']]);
+            }
+            flash('Refund of ' . money($amount, $order['currency']) . ' recorded. Send it to the customer the way they paid.');
+        }
+        db()->commit();
+        redirect('/admin/orders/view?id=' . $order['id'] . '#returns');
     }
 
     if ($action === 'toggle_currency') {

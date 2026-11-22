@@ -1,12 +1,14 @@
 <?php
 header('Cache-Control: private, no-store');
 $pending = (int) q("SELECT COUNT(*) FROM orders WHERE status='unfulfilled'")->fetchColumn();
+$pendingReturns = returns_available() ? (int) q("SELECT COUNT(*) FROM returns WHERE status='requested'")->fetchColumn() : 0;
 $nav = [
     'dashboard' => ['home', 'Home'],
     'orders' => ['orders', 'Orders'],
     'products' => ['box', 'Products'],
     'collections' => ['tag', 'Collections'],
     'customers' => ['users', 'Customers'],
+    'returns' => ['return', 'Returns'],
     'discounts' => ['tag', 'Discounts'],
     'currencies' => ['currency', 'Currencies'],
     'reviews' => ['star', 'Reviews'],
@@ -73,6 +75,10 @@ $title = $editing ? ($product ? 'Edit product' : 'Add product') : ($viewing ? 'O
                 <a href="/admin<?= $key === 'dashboard' ? '' : '/' . $key ?>" class="<?= $section === $key ? 'active' : '' ?>">
                     <?= icon($link[0], 19) ?>
                     <span><?= $link[1] ?></span>
+
+                    <?php if ($key === 'returns' && $pendingReturns): ?>
+                    <span class="nav-count"><?= $pendingReturns ?></span>
+                    <?php endif; ?>
 
                     <?php if ($key === 'orders' && $pending): ?>
                     <span class="nav-count"><?= $pending ?></span>
