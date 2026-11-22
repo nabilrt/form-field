@@ -253,6 +253,12 @@ try:
     html, ux, _ = request('/cart', {'action': 'cart_add', 'variant_id': 3, 'quantity': 1})
     check('/product/' + slug3 in html and ux.get('flash', {}).get('link', {}).get('href') == '/cart',
           'Add to bag returns to the product with a View bag link')
+    html, jx, status = request('/cart', {'action': 'cart_add', 'variant_id': 3, 'quantity': 1}, accept='application/json')
+    data = json.loads(html)
+    check(status == 200 and data['ok'] and data['count'] == 1 and 'View bag' in data['flash'] and 'flash' not in jx,
+          'Add to bag answers JSON with bag count and rendered notice for scripts')
+    html, _, status = request('/cart', {'action': 'cart_add', 'variant_id': 3, 'quantity': 999}, jx, accept='application/json')
+    check(status == 409 and not json.loads(html)['ok'], 'Unavailable quantity is reported to scripts as an error')
     _, ux, _ = request('/cart', {'action': 'cart_add', 'variant_id': 1, 'quantity': 1}, ux)
     html, ux, _ = request('/checkout', {'action': 'coupon', 'code': 'HELLO10', 'return_to': '/checkout',
                           'email': 'typed@test.local', 'city': 'Sylhet', 'first_name': ''}, ux)

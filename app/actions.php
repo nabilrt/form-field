@@ -50,6 +50,17 @@ if ($action === 'cart_add') {
         $_SESSION['cart'][$v['id']] = ($_SESSION['cart'][$v['id']] ?? 0) + $qty;
         flash('Added to your bag.', 'success', ['href' => '/cart', 'label' => 'View bag']);
     }
+    // Pages with JavaScript stay put: return the new bag count and the rendered notice.
+    if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json')) {
+        $ok = ($_SESSION['flash']['type'] ?? '') !== 'error';
+        ob_start();
+        require __DIR__ . '/../views/flash.php';
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: private, no-store');
+        http_response_code($ok ? 200 : 409);
+        echo json_encode(['ok' => $ok, 'count' => cart_count(), 'flash' => ob_get_clean()], JSON_THROW_ON_ERROR);
+        exit;
+    }
     // Shoppers keep browsing; the confirmation links to the bag.
     redirect($v ? '/product/' . rawurlencode($v['slug']) : '/cart');
 }

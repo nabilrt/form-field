@@ -113,10 +113,12 @@ $titles = [
                 <input
                     id="search"
                     name="q"
+                    autocomplete="off"
                     placeholder="Search furniture, electronics, and essentials…"
                 />
                 <button class="button dark">Search <?= icon('arrow', 16) ?></button>
             </div>
+            <div class="search-suggestions" data-search-results aria-live="polite"></div>
         </form>
 
         <?php require __DIR__ . '/flash.php'; ?>

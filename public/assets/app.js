@@ -97,39 +97,191 @@ document.querySelectorAll('[data-toggle]').forEach((button) =>
         if (open && target.id === 'search-panel') target.querySelector('input')?.focus();
     }),
 );
-document.querySelectorAll('[data-dismiss]').forEach((button) => {
-    button.addEventListener('click', () => {
-        const notice = button.closest('.flash');
-        if (!notice) return;
-        if (motionPreference.matches || !notice.animate) {
-            notice.remove();
+// Notices, auto-submit fields and no-JS fallbacks use delegation or a root,
+// so page sections swapped in later (cart, flash) behave like the original page.
+const dismissNotice = (notice) => {
+    if (motionPreference.matches || !notice.animate) {
+        notice.remove();
+        return;
+    }
+    notice.querySelector('[data-dismiss]')?.setAttribute('disabled', '');
+    const animation = notice.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: 120,
+        easing: 'ease-out',
+        fill: 'forwards',
+    });
+    animation.finished.then(() => notice.remove()).catch(() => notice.remove());
+};
+document.addEventListener('click', (event) => {
+    const notice = event.target.closest('[data-dismiss]')?.closest('.flash');
+    if (notice) dismissNotice(notice);
+});
+// Success notices leave on their own; errors stay until dismissed. Hover or focus holds them.
+const fadeLater = (notice) => {
+    if (notice.classList.contains('error') || !notice.querySelector('[data-dismiss]')) return;
+    const leave = () => {
+        if (!notice.isConnected) return;
+        if (notice.matches(':hover, :focus-within')) setTimeout(leave, 2000);
+        else dismissNotice(notice);
+    };
+    setTimeout(leave, 6000);
+};
+document.querySelectorAll('.flash').forEach(fadeLater);
+// Number fields wait a moment so a few spinner clicks become one submit.
+const autoSubmitTimers = new WeakMap();
+document.addEventListener('change', (event) => {
+    const field = event.target.closest?.('[data-auto-submit]');
+    if (!field?.form) return;
+    clearTimeout(autoSubmitTimers.get(field));
+    autoSubmitTimers.set(
+        field,
+        setTimeout(() => field.form.requestSubmit(), field.type === 'number' ? 600 : 0),
+    );
+});
+const hideNoJs = (root) =>
+    root.querySelectorAll('[data-no-js]').forEach((element) => (element.hidden = true));
+hideNoJs(document);
+// Replace the store notice and bag count with fresh ones from a server response.
+const showNotice = (html) => {
+    document.querySelectorAll('.flash:not([data-saved-notice])').forEach((old) => old.remove());
+    const holder = document.createElement('div');
+    holder.innerHTML = html.trim();
+    const notice = holder.querySelector('.flash');
+    if (!notice) return;
+    document.querySelector('#main-content')?.before(notice);
+    fadeLater(notice);
+};
+const setBagCount = (count) => {
+    document.querySelectorAll('.cart-count').forEach((badge) => (badge.textContent = count));
+    document
+        .querySelectorAll('.cart-link')
+        .forEach((link) => link.setAttribute('aria-label', `Shopping bag, ${count} items`));
+};
+const fetchPage = async (url, init = {}) => {
+    const response = await fetch(url, { credentials: 'same-origin', ...init });
+    if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+    return {
+        url: new URL(response.url),
+        doc: new DOMParser().parseFromString(await response.text(), 'text/html'),
+    };
+};
+const formBody = (form, submitter) => {
+    try {
+        return new FormData(form, submitter);
+    } catch {
+        const body = new FormData(form);
+        if (submitter?.name) body.append(submitter.name, submitter.value);
+        return body;
+    }
+};
+// Bag: quantity, remove and promo changes refresh the bag section in place.
+document.addEventListener('submit', async (event) => {
+    const form = event.target;
+    const page = form.closest('.cart-page');
+    if (!page || event.defaultPrevented || form.method !== 'post') return;
+    event.preventDefault();
+    const focusedId = document.activeElement?.id;
+    page.setAttribute('aria-busy', 'true');
+    try {
+        const { url, doc } = await fetchPage(form.action, {
+            method: 'POST',
+            body: formBody(form, event.submitter),
+        });
+        const next = doc.querySelector('.cart-page');
+        if (url.pathname !== '/cart' || !next) {
+            location.assign(url.href);
             return;
         }
+        page.replaceWith(next);
+        hideNoJs(next);
+        setBagCount(doc.querySelector('.cart-count')?.textContent ?? '0');
+        showNotice(doc.querySelector('.flash:not([data-saved-notice])')?.outerHTML ?? '');
+        if (focusedId) document.getElementById(focusedId)?.focus();
+    } catch {
+        page.removeAttribute('aria-busy');
+        form.submit();
+    }
+});
+// Product: add to bag without leaving the page.
+document.getElementById('add-to-cart')?.addEventListener('submit', async (event) => {
+    const form = event.currentTarget;
+    event.preventDefault();
+    const buttons = [...document.querySelectorAll('#add-button, [data-sticky-button]')];
+    const wasDisabled = buttons.map((button) => button.disabled);
+    buttons.forEach((button) => {
         button.disabled = true;
-        const animation = notice.animate([{ opacity: 1 }, { opacity: 0 }], {
-            duration: 120,
-            easing: 'ease-out',
-            fill: 'forwards',
+        button.setAttribute('aria-busy', 'true');
+    });
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
         });
-        animation.finished.then(() => notice.remove()).catch(() => notice.remove());
+        const data = await response.json();
+        setBagCount(data.count);
+        showNotice(data.flash || '');
+    } catch {
+        form.submit();
+    } finally {
+        buttons.forEach((button, i) => {
+            button.disabled = wasDisabled[i];
+            button.removeAttribute('aria-busy');
+        });
+    }
+});
+// Header search: suggest up to five products while typing; Enter still opens full results.
+const searchField = document.getElementById('search');
+const searchResults = document.querySelector('[data-search-results]');
+if (searchField && searchResults) {
+    let searchTimer;
+    let searchRun = 0;
+    searchField.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        const term = searchField.value.trim();
+        if (term.length < 2) {
+            searchRun++;
+            searchResults.replaceChildren();
+            return;
+        }
+        searchTimer = setTimeout(async () => {
+            const run = ++searchRun;
+            try {
+                const { doc } = await fetchPage('/shop?q=' + encodeURIComponent(term));
+                if (run !== searchRun) return;
+                const cards = [...doc.querySelectorAll('.product-card')].slice(0, 5);
+                const list = document.createElement('ul');
+                cards.forEach((card) => {
+                    const link = card.querySelector('h3 a');
+                    if (!link) return;
+                    const item = document.createElement('li');
+                    const anchor = document.createElement('a');
+                    anchor.href = link.getAttribute('href');
+                    const image = document.createElement('img');
+                    image.src = card.querySelector('.product-photo img')?.getAttribute('src') ?? '';
+                    image.alt = '';
+                    image.width = 40;
+                    image.height = 46;
+                    const name = document.createElement('span');
+                    name.textContent = link.textContent.trim();
+                    const price = document.createElement('small');
+                    price.textContent = card.querySelector('.product-meta > span')?.textContent.trim() ?? '';
+                    anchor.append(image, name, price);
+                    item.append(anchor);
+                    list.append(item);
+                });
+                const summary = document.createElement('p');
+                summary.textContent = cards.length
+                    ? `${cards.length} suggestion${cards.length === 1 ? '' : 's'} · press Enter for all results`
+                    : `No products match “${term}”.`;
+                searchResults.replaceChildren(summary, ...(cards.length ? [list] : []));
+            } catch {
+                searchResults.replaceChildren();
+            }
+        }, 250);
     });
-});
-// Number fields wait a moment so a few spinner clicks become one submit.
-document.querySelectorAll('[data-auto-submit]').forEach((field) => {
-    let timer;
-    field.addEventListener('change', () => {
-        clearTimeout(timer);
-        timer = setTimeout(() => field.form.requestSubmit(), field.type === 'number' ? 600 : 0);
-    });
-});
-document.querySelectorAll('[data-no-js]').forEach((element) => (element.hidden = true));
-// Success notices leave on their own; errors stay until dismissed. Hover or focus holds them.
-document.querySelectorAll('.flash:not(.error) [data-dismiss]').forEach((button) => {
-    const notice = button.closest('.flash');
-    const leave = () =>
-        notice.matches(':hover, :focus-within') ? setTimeout(leave, 2000) : button.click();
-    setTimeout(leave, 6000);
-});
+}
 // Checkout promo forms carry what the shopper already typed.
 const checkoutForm = document.getElementById('checkout-form');
 document.querySelectorAll('[data-carry-checkout]').forEach((form) =>
@@ -261,11 +413,26 @@ if (variantForm) {
         if (event.target.name === 'variant_id') update();
     });
     // Mobile buy bar appears once the real button has scrolled above the screen.
+    // A scroll check (once per frame) also catches fast flings that skip past the button.
     const sticky = document.querySelector('[data-sticky-buy]');
-    if (sticky && 'IntersectionObserver' in window) {
-        new IntersectionObserver(([entry]) => {
-            sticky.hidden = entry.isIntersecting || entry.boundingClientRect.top > 0;
-        }).observe(document.getElementById('add-button'));
+    const anchor = document.getElementById('add-button');
+    if (sticky && anchor) {
+        let queued = false;
+        const place = () => {
+            queued = false;
+            sticky.hidden = anchor.getBoundingClientRect().bottom > 0;
+        };
+        window.addEventListener(
+            'scroll',
+            () => {
+                if (!queued) {
+                    queued = true;
+                    requestAnimationFrame(place);
+                }
+            },
+            { passive: true },
+        );
+        place();
     }
     document
         .querySelectorAll('[data-quantity]')
